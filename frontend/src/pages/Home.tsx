@@ -152,12 +152,10 @@ export default function Home() {
   // Accordéon FAQ
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  // Sort de la <main> centrée pour afficher des sections pleine largeur.
+  // La Home est rendue dans une <main> pleine largeur (voir App.tsx) :
+  // un simple conteneur suffit, pas de marges négatives ni de 100vw.
   const fullBleed: CSSProperties = {
-    width: "100vw",
-    marginLeft: "calc(50% - 50vw)",
-    marginTop: "-2rem",
-    marginBottom: "-2rem",
+    width: "100%",
     overflowX: "hidden",
   };
 
@@ -173,14 +171,8 @@ export default function Home() {
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
           {/* Texte */}
           <div className="order-2 md:order-1">
-            <span
-              className="inline-block rounded-full px-4 py-1 text-sm font-semibold"
-              style={{ backgroundColor: "rgba(255,255,255,0.14)", color: C.white }}
-            >
-              ✨ IA spécialisée visa
-            </span>
             <h1
-              className="mt-5 text-4xl font-bold leading-tight text-white sm:text-5xl"
+              className="text-4xl font-bold leading-tight text-white sm:text-5xl"
               style={serif}
             >
               Maximisez vos chances d'obtenir votre visa

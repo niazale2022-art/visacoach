@@ -34,6 +34,22 @@ body {
   font-family: "Merriweather", Georgia, serif;
 }
 
+/* Navbar responsive : liens desktop vs menu hamburger */
+@media (max-width: 768px) {
+  .nav-desktop {
+    display: none !important;
+  }
+  .nav-hamburger {
+    display: flex !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .nav-hamburger {
+    display: none !important;
+  }
+}
+
 /* Styles utilitaires réutilisables */
 @layer components {
   .btn-primary {

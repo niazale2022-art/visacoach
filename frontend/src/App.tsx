@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, Route, Routes, useNavigate } from "react-router-dom";
+import { useEffect, useState, type CSSProperties } from "react";
+import { Link, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Diagnostic from "./pages/Diagnostic";
 import Score from "./pages/Score";
@@ -20,6 +20,42 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+// Styles partagés de la navbar.
+const navLink: CSSProperties = {
+  color: "rgba(255,255,255,0.8)",
+  textDecoration: "none",
+  fontSize: "0.875rem",
+  fontWeight: 500,
+};
+const goldNavBtn: CSSProperties = {
+  background: "#F7B731",
+  color: "#0A0F2C",
+  border: "none",
+  padding: "9px 22px",
+  borderRadius: "6px",
+  fontWeight: 700,
+  cursor: "pointer",
+  fontSize: "0.875rem",
+};
+const mobileLink: CSSProperties = {
+  color: "white",
+  textDecoration: "none",
+  fontWeight: 600,
+  fontSize: "1rem",
+  padding: "8px 0",
+  borderBottom: "1px solid rgba(255,255,255,0.1)",
+};
+const mobileGoldBtn: CSSProperties = {
+  background: "#F7B731",
+  color: "#0A0F2C",
+  border: "none",
+  padding: "14px",
+  borderRadius: "8px",
+  fontWeight: 800,
+  cursor: "pointer",
+  fontSize: "1rem",
+};
+
 /**
  * Layout principal + routage de l'application.
  *
@@ -27,19 +63,13 @@ interface BeforeInstallPromptEvent extends Event {
  */
 export default function App() {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const location = useLocation();
+  const { user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const firstName =
-    (user?.user_metadata?.first_name as string | undefined) ||
-    user?.email?.split("@")[0] ||
-    "Mon compte";
-
-  const handleSignOut = async () => {
-    setMenuOpen(false);
-    await signOut();
-    navigate("/");
-  };
+  // La Home s'affiche pleine largeur ; les autres pages restent dans un
+  // conteneur centré avec padding.
+  const isHome = location.pathname === "/";
 
   const [installPrompt, setInstallPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
@@ -79,82 +109,136 @@ export default function App() {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-6 sm:flex">
-            <a href="/#process" className="text-sm font-medium text-white/85 hover:text-white">
-              Comment ça marche
-            </a>
-            <a href="/#pricing" className="text-sm font-medium text-white/85 hover:text-white">
-              Tarifs
-            </a>
-            <a href="/#faq" className="text-sm font-medium text-white/85 hover:text-white">
-              FAQ
-            </a>
-          </nav>
-
-          {user ? (
-            <div className="flex items-center gap-3">
-              {/* Menu profil */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setMenuOpen((o) => !o)}
-                  className="rounded-xl px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-                >
-                  👤 {firstName} ▾
+          {/* Liens desktop (cachés < 768px via .nav-desktop) */}
+          <ul
+            className="nav-desktop"
+            style={{
+              display: "flex",
+              gap: "28px",
+              listStyle: "none",
+              alignItems: "center",
+              margin: 0,
+              padding: 0,
+            }}
+          >
+            <li>
+              <a href="/#process" style={navLink}>
+                Comment ça marche
+              </a>
+            </li>
+            <li>
+              <a href="/#pricing" style={navLink}>
+                Tarifs
+              </a>
+            </li>
+            <li>
+              <a href="/#faq" style={navLink}>
+                FAQ
+              </a>
+            </li>
+            {user ? (
+              <li>
+                <button type="button" onClick={() => navigate("/dashboard")} style={goldNavBtn}>
+                  Mon dossier →
                 </button>
-                {menuOpen && (
-                  <div className="absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5">
-                    <Link
-                      to="/dashboard"
-                      onClick={() => setMenuOpen(false)}
-                      className="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      Mon tableau de bord
-                    </Link>
-                    <Link
-                      to="/dashboard"
-                      onClick={() => setMenuOpen(false)}
-                      className="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      Mes documents
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={handleSignOut}
-                      className="block w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-slate-50"
-                    >
-                      Se déconnecter
-                    </button>
-                  </div>
-                )}
-              </div>
-              <Link
-                to="/dashboard"
-                className="rounded-xl px-4 py-2 text-sm font-bold transition hover:brightness-95"
-                style={{ backgroundColor: "#F7B731", color: "#0A0F2C" }}
-              >
-                Mon dossier →
-              </Link>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <Link
-                to="/login"
-                className="text-sm font-semibold text-white/90 hover:text-white"
-              >
-                Se connecter
-              </Link>
-              <Link
-                to="/diagnostic"
-                className="rounded-xl px-4 py-2 text-sm font-bold transition hover:brightness-95"
-                style={{ backgroundColor: "#F7B731", color: "#0A0F2C" }}
-              >
-                Diagnostic gratuit →
-              </Link>
-            </div>
-          )}
+              </li>
+            ) : (
+              <>
+                <li>
+                  <a href="/login" style={navLink}>
+                    Se connecter
+                  </a>
+                </li>
+                <li>
+                  <button type="button" onClick={() => navigate("/diagnostic")} style={goldNavBtn}>
+                    Diagnostic gratuit →
+                  </button>
+                </li>
+              </>
+            )}
+          </ul>
+
+          {/* Bouton hamburger (visible < 768px via .nav-hamburger) */}
+          <button
+            type="button"
+            className="nav-hamburger"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label="Menu"
+            style={{
+              display: "none",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: "8px",
+              color: "white",
+              fontSize: "1.5rem",
+            }}
+          >
+            {menuOpen ? "✕" : "☰"}
+          </button>
         </div>
       </header>
+
+      {/* Menu mobile déroulant */}
+      {menuOpen && (
+        <div
+          style={{
+            position: "fixed",
+            top: "64px",
+            left: 0,
+            right: 0,
+            background: "#1434A4",
+            zIndex: 99,
+            padding: "20px 5%",
+            display: "flex",
+            flexDirection: "column",
+            gap: "16px",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+          }}
+        >
+          <a href="/#process" onClick={() => setMenuOpen(false)} style={mobileLink}>
+            Comment ça marche
+          </a>
+          <a href="/#pricing" onClick={() => setMenuOpen(false)} style={mobileLink}>
+            Tarifs
+          </a>
+          <a href="/#faq" onClick={() => setMenuOpen(false)} style={mobileLink}>
+            FAQ
+          </a>
+          {user ? (
+            <button
+              type="button"
+              onClick={() => {
+                navigate("/dashboard");
+                setMenuOpen(false);
+              }}
+              style={mobileGoldBtn}
+            >
+              Mon dossier →
+            </button>
+          ) : (
+            <>
+              <a
+                href="/login"
+                onClick={() => setMenuOpen(false)}
+                style={{ ...mobileLink, borderBottom: "none" }}
+              >
+                Se connecter
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  navigate("/diagnostic");
+                  setMenuOpen(false);
+                }}
+                style={mobileGoldBtn}
+              >
+                Diagnostic gratuit →
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Bannière d'installation PWA */}
       {showInstallBanner && (
@@ -209,7 +293,13 @@ export default function App() {
         </div>
       )}
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+      <main
+        className={
+          isHome
+            ? "w-full flex-1"
+            : "mx-auto w-full max-w-5xl flex-1 px-4 py-8"
+        }
+      >
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
