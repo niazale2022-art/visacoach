@@ -66,22 +66,30 @@ def profile_block(d: dict) -> str:
     )
 
 
-def _text(system: str, user: str, max_tokens: int = 2500) -> str:
+def _text(
+    system: str, user: str, max_tokens: int = 2500, use_thinking: bool = True
+) -> str:
+    # IMPORTANT : `max_tokens` couvre la réflexion (thinking) ET la sortie. Pour
+    # une sortie JSON, on désactive la réflexion afin que tout le budget aille au
+    # JSON (sinon le JSON est tronqué -> parse error).
+    kwargs: dict = {
+        "model": settings.CLAUDE_MODEL,
+        "max_tokens": max_tokens,
+        "system": system,
+        "messages": [{"role": "user", "content": user}],
+    }
+    if use_thinking:
+        kwargs["thinking"] = {"type": "adaptive"}
     try:
-        message = _client.messages.create(
-            model=settings.CLAUDE_MODEL,
-            max_tokens=max_tokens,
-            thinking={"type": "adaptive"},
-            system=system,
-            messages=[{"role": "user", "content": user}],
-        )
+        message = _client.messages.create(**kwargs)
     except anthropic.APIError as exc:
         raise RuntimeError(f"Erreur IA : {exc}") from exc
     return "\n".join(b.text for b in message.content if b.type == "text").strip()
 
 
-def _json(system: str, user: str, max_tokens: int = 2500):
-    raw = _text(system, user, max_tokens)
+def _json(system: str, user: str, max_tokens: int = 4000):
+    # Pas de thinking + budget généreux : garantit un JSON complet.
+    raw = _text(system, user, max_tokens, use_thinking=False)
     cleaned = raw.strip()
     if cleaned.startswith("```"):
         cleaned = cleaned.strip("`")
@@ -168,7 +176,7 @@ Réponds avec ce JSON exact :
   "conseils": ["conseil de présentation", "..."]
 }}
 8 à 10 questions probables selon le profil, et 3 à 5 conseils."""
-    data = _json(system, user, max_tokens=3000)
+    data = _json(system, user, max_tokens=4000)
     return {
         "questions": [
             {
