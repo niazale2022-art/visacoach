@@ -16,15 +16,29 @@ export default function NouveauDossier() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function create(origine: string) {
-    if (!typeVisa || !paysDest) return;
+  // Étape 4 — profil du demandeur (alimente le profil de risque consulaire).
+  const [age, setAge] = useState("");
+  const [situation, setSituation] = useState("celibataire");
+  const [proprietaire, setProprietaire] = useState("non");
+  const [historique, setHistorique] = useState("jamais");
+  const [emploi, setEmploi] = useState("cdi");
+
+  async function create() {
+    if (!typeVisa || !paysDest || !paysOrig) return;
     setCreating(true);
     setError(null);
     try {
       const { dossier_id } = await api.creerDossier({
         type_visa: typeVisa,
         pays_destination: paysDest,
-        pays_origine: origine,
+        pays_origine: paysOrig,
+        profil: {
+          age: age ? Number(age) : undefined,
+          situation_familiale: situation,
+          proprietaire: proprietaire === "oui",
+          historique_voyage: historique,
+          statut_emploi: emploi,
+        },
       });
       navigate(`/dossier-universel/${dossier_id}`);
     } catch (err) {
@@ -41,10 +55,10 @@ export default function NouveauDossier() {
     <div className="mx-auto max-w-3xl">
       {/* Progression */}
       <div className="mb-8 flex items-center justify-center gap-2">
-        {[1, 2, 3].map((s) => (
+        {[1, 2, 3, 4].map((s) => (
           <span
             key={s}
-            className="h-2 w-16 rounded-full"
+            className="h-2 w-12 rounded-full"
             style={{ backgroundColor: s <= step ? BLUE : "#DDE3F5" }}
           />
         ))}
@@ -143,7 +157,7 @@ export default function NouveauDossier() {
                 type="button"
                 onClick={() => {
                   setPaysOrig(p.id);
-                  create(p.id);
+                  setStep(4);
                 }}
                 className={`rounded-xl border bg-white p-3 text-center transition hover:border-brand-400 hover:bg-slate-50 ${
                   paysOrig === p.id ? "border-brand-600" : "border-slate-200"
@@ -159,6 +173,114 @@ export default function NouveauDossier() {
           <button
             type="button"
             onClick={() => setStep(2)}
+            className="mt-6 text-sm text-slate-500 hover:text-slate-700"
+          >
+            ← Retour
+          </button>
+        </>
+      )}
+
+      {/* Étape 4 — Profil du demandeur */}
+      {step === 4 && (
+        <>
+          <h1 className="mb-2 text-center text-3xl font-bold" style={{ color: INK }}>
+            Votre profil
+          </h1>
+          <p className="mb-8 text-center" style={{ color: SLATE }}>
+            Ces informations affinent votre profil de risque consulaire.
+          </p>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              create();
+            }}
+            className="card space-y-4"
+          >
+            <div>
+              <label className="mb-1 block text-sm font-semibold" style={{ color: SLATE }}>
+                Âge
+              </label>
+              <input
+                type="number"
+                min={16}
+                max={99}
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-brand-500 focus:outline-none"
+                placeholder="Ex. 28"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-semibold" style={{ color: SLATE }}>
+                Situation familiale
+              </label>
+              <select
+                value={situation}
+                onChange={(e) => setSituation(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-brand-500 focus:outline-none"
+              >
+                <option value="celibataire">Célibataire</option>
+                <option value="marie">Marié(e)</option>
+                <option value="enfants">Marié(e) avec enfants</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-semibold" style={{ color: SLATE }}>
+                Êtes-vous propriétaire ?
+              </label>
+              <select
+                value={proprietaire}
+                onChange={(e) => setProprietaire(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-brand-500 focus:outline-none"
+              >
+                <option value="non">Non</option>
+                <option value="oui">Oui</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-semibold" style={{ color: SLATE }}>
+                Historique de voyage
+              </label>
+              <select
+                value={historique}
+                onChange={(e) => setHistorique(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-brand-500 focus:outline-none"
+              >
+                <option value="jamais">Jamais voyagé</option>
+                <option value="quelques_pays">Quelques pays</option>
+                <option value="regulier">Voyageur régulier</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-semibold" style={{ color: SLATE }}>
+                Statut d'emploi
+              </label>
+              <select
+                value={emploi}
+                onChange={(e) => setEmploi(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-brand-500 focus:outline-none"
+              >
+                <option value="cdi">Salarié (CDI)</option>
+                <option value="cdd">Salarié (CDD)</option>
+                <option value="independant">Indépendant</option>
+                <option value="sans_emploi">Sans emploi</option>
+                <option value="etudiant">Étudiant</option>
+              </select>
+            </div>
+
+            <button type="submit" className="btn-primary w-full">
+              Créer mon dossier →
+            </button>
+          </form>
+
+          <button
+            type="button"
+            onClick={() => setStep(3)}
             className="mt-6 text-sm text-slate-500 hover:text-slate-700"
           >
             ← Retour

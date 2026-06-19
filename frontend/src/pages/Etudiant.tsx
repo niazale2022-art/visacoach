@@ -35,7 +35,8 @@ const TESTIMONIALS = [
 
 export default function Etudiant() {
   const navigate = useNavigate();
-  const start = () => navigate("/etudiant/diagnostic");
+  // Redirige vers le parcours universel (les CTA étudiant pointent ici).
+  const start = () => navigate("/nouveau-dossier");
 
   return (
     <div style={{ width: "100%", overflowX: "hidden" }}>

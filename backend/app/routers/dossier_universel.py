@@ -66,6 +66,9 @@ class CreerRequest(BaseModel):
     type_visa: str
     pays_destination: str
     pays_origine: str
+    # Profil du demandeur (âge, situation familiale, propriétaire, historique
+    # de voyage, statut emploi) — alimente le profil de risque consulaire.
+    profil: dict | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -151,6 +154,16 @@ def creer(
     if not res.data:
         raise HTTPException(status_code=500, detail="Dossier non créé.")
     dossier_id = res.data[0]["id"]
+
+    # Stocke le profil du demandeur (séparément, pour rester robuste si la
+    # colonne profil_demandeur n'a pas encore été ajoutée à une base existante).
+    if payload.profil:
+        try:
+            supabase.table("dossiers_universels").update(
+                {"profil_demandeur": payload.profil}
+            ).eq("id", dossier_id).execute()
+        except Exception:  # noqa: BLE001 — colonne absente : on ignore
+            pass
 
     checklist = checklist_officielle.get_checklist(
         payload.type_visa, payload.pays_destination
@@ -378,6 +391,7 @@ def risque(dossier_id: str, refresh: bool = False) -> dict:
 
     pieces = _pieces(dossier_id)
     profil = {
+        **(dossier.get("profil_demandeur") or {}),
         "documents_fournis": len([p for p in pieces if p["statut"] != "a_fournir"]),
         "documents_valides": len([p for p in pieces if p["statut"] == "valide"]),
     }

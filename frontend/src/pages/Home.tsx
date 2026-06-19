@@ -140,7 +140,8 @@ function tauxColor(taux: number): string {
 // --- Composant --------------------------------------------------------------
 export default function Home() {
   const navigate = useNavigate();
-  const goDiagnostic = () => navigate("/diagnostic");
+  // Tous les CTA pointent désormais vers le parcours universel.
+  const goDiagnostic = () => navigate("/nouveau-dossier");
 
   // Animation de la barre de score
   const [scoreWidth, setScoreWidth] = useState(0);

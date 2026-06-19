@@ -206,6 +206,7 @@ create table if not exists public.dossiers_universels (
                             check (statut in ('en_cours', 'pret', 'depose', 'obtenu', 'refuse')),
     score_global         integer not null default 0 check (score_global between 0 and 100),
     score_coherence      integer,
+    profil_demandeur     jsonb,  -- âge, situation familiale, propriétaire, historique voyage, emploi
     profil_risque        jsonb,
     date_depot_optimale  date,
     created_at           timestamptz not null default now(),
@@ -214,6 +215,10 @@ create table if not exists public.dossiers_universels (
 
 create index if not exists idx_dossiers_universels_user_id
     on public.dossiers_universels (user_id);
+
+-- Pour les bases existantes (table déjà créée sans la colonne).
+alter table public.dossiers_universels
+    add column if not exists profil_demandeur jsonb;
 
 -- Pièces (documents) du dossier universel.
 create table if not exists public.dossier_pieces (

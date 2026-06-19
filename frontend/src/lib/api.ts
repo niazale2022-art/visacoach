@@ -154,6 +154,14 @@ export interface Bourse {
 }
 
 // --- Dossier universel ----------------------------------------------
+export interface ProfilDemandeur {
+  age?: number;
+  situation_familiale?: string;
+  proprietaire?: boolean;
+  historique_voyage?: string;
+  statut_emploi?: string;
+}
+
 export type PieceStatut =
   | "a_fournir"
   | "uploade"
@@ -446,6 +454,7 @@ export const api = {
     type_visa: string;
     pays_destination: string;
     pays_origine: string;
+    profil?: ProfilDemandeur;
   }) =>
     request<{ dossier_id: string }>("/api/dossier-universel/creer", {
       method: "POST",
