@@ -306,11 +306,6 @@ async def upload(
                 "feedback_ia": verdict["feedback"],
                 "suggestions": verdict["suggestions"],
                 "note": verdict["note"],
-                "donnees_extraites": {
-                    "statut": verdict["status"],
-                    "note": verdict["note"],
-                    "resume": verdict["feedback"][:500],
-                },
                 "updated_at": "now()",
             }
         )
@@ -325,59 +320,140 @@ async def upload(
 
 
 # ---------------------------------------------------------------------------
-# Analyse de cohérence
+# Analyse de cohérence inter-documents (verdict consulaire)
 # ---------------------------------------------------------------------------
-@router.post("/{dossier_id}/coherence")
-def coherence(dossier_id: str) -> dict:
-    dossier = _get_dossier(dossier_id)
-    pieces = _pieces(dossier_id)
+class CoherenceRequest(BaseModel):
+    dossier_id: str
+
+
+def _persist_coherence(dossier_id: str, r: dict) -> None:
+    """Enregistre l'analyse (robuste si les colonnes verdict ne sont pas créées)."""
+    supabase = get_supabase()
+    base = {
+        "dossier_id": dossier_id,
+        "score_coherence": r["score_coherence"],
+        "niveau": r["niveau"],
+        "incoherences_critiques": r["incoherences_critiques"],
+        "points_vigilance": r["points_vigilance"],
+        "points_forts": r["points_forts"],
+        "recommandations": r["recommandations_prioritaires"],
+    }
+    extra = {
+        "verdict_consul": r["verdict_consul"],
+        "probabilite_accord": r["probabilite_accord"],
+        "resume_consul": r["resume_consul"],
+    }
+    try:
+        supabase.table("analyses_coherence").insert({**base, **extra}).execute()
+    except Exception:  # noqa: BLE001 — colonnes verdict non créées : repli
+        try:
+            supabase.table("analyses_coherence").insert(base).execute()
+        except Exception:  # noqa: BLE001
+            pass
+
+
+@router.post("/coherence")
+def lancer_coherence(payload: CoherenceRequest) -> dict:
+    """Lance l'analyse de cohérence inter-documents (verdict consulaire simulé)."""
+    dossier = _get_dossier(payload.dossier_id)
+    supabase = get_supabase()
     uploaded = [
-        p for p in pieces if p["statut"] in ("valide", "incomplet", "probleme")
+        p
+        for p in _pieces(payload.dossier_id)
+        if p["statut"] in ("valide", "incomplet", "probleme")
     ]
     if len(uploaded) < 2:
-        raise HTTPException(
-            status_code=400,
-            detail="Ajoutez au moins 2 documents avant l'analyse de cohérence.",
-        )
-
-    documents = [
-        {
-            "type": p["type_document"],
-            "label": p["label"],
-            "statut": p["statut"],
-            "note": p.get("note"),
-            "analyse": (p.get("feedback_ia") or "")[:500],
+        return {
+            "pret": False,
+            "message": "Uploadez au moins 2 documents pour lancer l'analyse de cohérence.",
         }
-        for p in uploaded
-    ]
-    profil = {
-        "type_visa": dossier["type_visa"],
-        "pays_destination": dossier["pays_destination"],
-        "pays_origine": dossier["pays_origine"],
-    }
+
+    # Extraction paresseuse des données structurées (mise en cache par pièce).
+    for p in uploaded:
+        de = p.get("donnees_extraites")
+        if not isinstance(de, dict) or "dates" not in de:
+            donnees = analyse_coherence.extraire_donnees_document(
+                p["type_document"],
+                p.get("feedback_ia") or "",
+                p.get("storage_path") or "",
+            )
+            supabase.table("dossier_pieces").update(
+                {"donnees_extraites": donnees}
+            ).eq("id", p["id"]).execute()
+            p["donnees_extraites"] = donnees
 
     try:
-        result = analyse_coherence.analyser_coherence(documents, profil)
+        result = analyse_coherence.analyser_coherence_globale(
+            uploaded,
+            dossier["type_visa"],
+            dossier["pays_destination"],
+            dossier["pays_origine"],
+            profil=dossier.get("profil_demandeur"),
+        )
     except RuntimeError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
-    supabase = get_supabase()
-    supabase.table("analyses_coherence").insert(
-        {
-            "dossier_id": dossier_id,
-            "score_coherence": result["score_coherence"],
-            "niveau": result["niveau"],
-            "incoherences_critiques": result["incoherences_critiques"],
-            "points_vigilance": result["points_vigilance"],
-            "points_forts": result["points_forts"],
-            "recommandations": result["recommandations"],
-        }
-    ).execute()
-    supabase.table("dossiers_universels").update(
-        {"score_coherence": result["score_coherence"], "updated_at": "now()"}
-    ).eq("id", dossier_id).execute()
+    if result.get("pret"):
+        _persist_coherence(payload.dossier_id, result)
+        supabase.table("dossiers_universels").update(
+            {"score_coherence": result["score_coherence"], "updated_at": "now()"}
+        ).eq("id", payload.dossier_id).execute()
 
     return result
+
+
+@router.get("/coherence/{dossier_id}")
+def get_coherence(dossier_id: str) -> dict:
+    """Récupère la dernière analyse de cohérence enregistrée."""
+    supabase = get_supabase()
+    r = (
+        supabase.table("analyses_coherence")
+        .select("*")
+        .eq("dossier_id", dossier_id)
+        .order("created_at", desc=True)
+        .limit(1)
+        .execute()
+    )
+    if not r.data:
+        return {"pret": False, "message": "Aucune analyse disponible."}
+    row = r.data[0]
+    return {
+        "pret": True,
+        "score_coherence": row.get("score_coherence"),
+        "niveau": row.get("niveau"),
+        "resume_consul": row.get("resume_consul"),
+        "incoherences_critiques": row.get("incoherences_critiques") or [],
+        "points_vigilance": row.get("points_vigilance") or [],
+        "points_forts": row.get("points_forts") or [],
+        "recommandations_prioritaires": row.get("recommandations") or [],
+        "verdict_consul": row.get("verdict_consul"),
+        "probabilite_accord": row.get("probabilite_accord"),
+    }
+
+
+@router.post("/extraire-donnees/{piece_id}")
+def extraire_donnees(piece_id: str) -> dict:
+    """Extrait et enregistre les données structurées d'une pièce."""
+    supabase = get_supabase()
+    r = (
+        supabase.table("dossier_pieces")
+        .select("*")
+        .eq("id", piece_id)
+        .limit(1)
+        .execute()
+    )
+    if not r.data:
+        raise HTTPException(status_code=404, detail="Document introuvable.")
+    piece = r.data[0]
+    donnees = analyse_coherence.extraire_donnees_document(
+        piece["type_document"],
+        piece.get("feedback_ia") or "",
+        piece.get("storage_path") or "",
+    )
+    supabase.table("dossier_pieces").update({"donnees_extraites": donnees}).eq(
+        "id", piece_id
+    ).execute()
+    return donnees
 
 
 # ---------------------------------------------------------------------------

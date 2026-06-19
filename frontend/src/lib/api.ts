@@ -218,13 +218,40 @@ export interface DossierSummary {
   score_global: number;
 }
 
-export interface CoherenceResult {
-  score_coherence: number;
-  niveau: string;
-  incoherences_critiques: string[];
-  points_vigilance: string[];
-  points_forts: string[];
-  recommandations: string[];
+export interface Incoherence {
+  titre: string;
+  description: string;
+  documents_impliques: string[];
+  impact: string;
+  solution: string;
+}
+
+export interface Vigilance {
+  titre: string;
+  description: string;
+  conseil: string;
+}
+
+export interface Recommandation {
+  priorite: number;
+  action: string;
+  raison: string;
+  urgence: string;
+}
+
+export interface CoherenceAnalyse {
+  pret: boolean;
+  message?: string;
+  nb_documents_analyses?: number;
+  score_coherence: number | null;
+  niveau?: string;
+  resume_consul?: string;
+  incoherences_critiques?: Incoherence[];
+  points_vigilance?: Vigilance[];
+  points_forts?: string[];
+  recommandations_prioritaires?: Recommandation[];
+  verdict_consul?: string;
+  probabilite_accord?: number;
 }
 
 export interface RisqueResult {
@@ -498,9 +525,13 @@ export const api = {
   },
 
   analyseCoherence: (id: string) =>
-    request<CoherenceResult>(`/api/dossier-universel/${id}/coherence`, {
+    request<CoherenceAnalyse>("/api/dossier-universel/coherence", {
       method: "POST",
+      body: JSON.stringify({ dossier_id: id }),
     }),
+
+  getAnalyseCoherence: (id: string) =>
+    request<CoherenceAnalyse>(`/api/dossier-universel/coherence/${id}`),
 
   getProfilRisque: (id: string) =>
     request<RisqueResult>(`/api/dossier-universel/${id}/risque`),

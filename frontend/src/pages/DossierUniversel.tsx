@@ -8,7 +8,6 @@ import DateDepot from "../components/dossier/DateDepot";
 import {
   api,
   type ChecklistItem,
-  type CoherenceResult,
   type DateDepotResult,
   type DossierPiece,
   type DossierUniversel as Dossier,
@@ -26,8 +25,6 @@ export default function DossierUniversel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [coherence, setCoherence] = useState<CoherenceResult | null>(null);
-  const [coherenceLoading, setCoherenceLoading] = useState(false);
   const [risque, setRisque] = useState<RisqueResult | null>(null);
   const [risqueLoading, setRisqueLoading] = useState(false);
   const [dateDepot, setDateDepot] = useState<DateDepotResult | null>(null);
@@ -65,19 +62,6 @@ export default function DossierUniversel() {
     setScore(scoreGlobal);
   }
 
-  async function runCoherence() {
-    if (!id) return;
-    setCoherenceLoading(true);
-    setError(null);
-    try {
-      setCoherence(await api.analyseCoherence(id));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Erreur d'analyse.");
-    } finally {
-      setCoherenceLoading(false);
-    }
-  }
-
   async function runRisque() {
     if (!id) return;
     setRisqueLoading(true);
@@ -111,6 +95,7 @@ export default function DossierUniversel() {
   const orig = paysLabel(dossier.pays_origine);
   const total = checklist.filter((i) => i.obligatoire).length;
   const valides = checklist.filter((i) => i.obligatoire && i.statut === "valide").length;
+  const uploadedCount = checklist.filter((i) => i.statut !== "a_fournir").length;
   const selected = checklist.find((i) => i.id === selectedId) ?? null;
 
   return (
@@ -182,11 +167,14 @@ export default function DossierUniversel() {
       </div>
 
       {/* Zone 4 — Analyses */}
-      <AnalyseCoherence
-        result={coherence}
-        loading={coherenceLoading}
-        onAnalyse={runCoherence}
-      />
+      {uploadedCount >= 2 ? (
+        <AnalyseCoherence dossierId={id} nbDocuments={uploadedCount} />
+      ) : (
+        <div className="card text-sm text-slate-500">
+          🔍 Ajoutez au moins 2 documents pour débloquer l'analyse de cohérence
+          consulaire (le différenciateur VisaCoach).
+        </div>
+      )}
       <div className="grid gap-6 md:grid-cols-2">
         <ProfilRisque result={risque} loading={risqueLoading} onLoad={runRisque} />
         <DateDepot result={dateDepot} loading={dateLoading} onLoad={runDate} />

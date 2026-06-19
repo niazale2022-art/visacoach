@@ -259,6 +259,14 @@ create table if not exists public.analyses_coherence (
 create index if not exists idx_analyses_coherence_dossier_id
     on public.analyses_coherence (dossier_id);
 
+-- Colonnes supplémentaires (verdict consulaire) — pour bases existantes aussi.
+alter table public.analyses_coherence
+    add column if not exists verdict_consul text;
+alter table public.analyses_coherence
+    add column if not exists probabilite_accord integer;
+alter table public.analyses_coherence
+    add column if not exists resume_consul text;
+
 -- RLS (lecture limitée au propriétaire ; le backend service_role contourne).
 alter table public.dossiers_universels enable row level security;
 alter table public.dossier_pieces      enable row level security;
