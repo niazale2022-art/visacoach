@@ -16,6 +16,18 @@ if ("serviceWorker" in navigator) {
     refreshing = true;
     window.location.reload();
   });
+
+  // `autoUpdate` ne vérifie une nouvelle version qu'au chargement de la page :
+  // un onglet (ou la PWA installée) laissé ouvert reste bloqué sur l'ancien
+  // bundle. On force une vérification périodique pour que tout déploiement se
+  // propage en ~1 min sans rechargement manuel.
+  navigator.serviceWorker.ready
+    .then((registration) => {
+      setInterval(() => registration.update(), 60 * 1000);
+    })
+    .catch(() => {
+      /* pas de SW disponible — sans effet */
+    });
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
