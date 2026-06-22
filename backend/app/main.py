@@ -11,6 +11,7 @@ from app.routers import (
     martin,
     payments,
     reports,
+    stripe_payments,
 )
 
 app = FastAPI(
@@ -53,6 +54,7 @@ app.include_router(
     tags=["dossier-universel"],
 )
 app.include_router(martin.router, prefix="/api/martin", tags=["martin"])
+app.include_router(stripe_payments.router, prefix="/api/stripe", tags=["stripe"])
 
 
 @app.get("/", tags=["meta"])

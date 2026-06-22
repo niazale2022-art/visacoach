@@ -17,6 +17,7 @@ import EtudiantDashboard from "./pages/EtudiantDashboard";
 import NouveauDossier from "./pages/NouveauDossier";
 import DossierUniversel from "./pages/DossierUniversel";
 import MesDossiers from "./pages/MesDossiers";
+import PaiementSucces from "./pages/PaiementSucces";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import MartinChat from "./components/MartinChat";
 import { useAuth } from "./contexts/AuthContext";
@@ -362,6 +363,7 @@ export default function App() {
           <Route path="/dossier/:diagnostic_id" element={<Dossier />} />
           <Route path="/conseils/:diagnostic_id" element={<Conseils />} />
           <Route path="/success" element={<Success />} />
+          <Route path="/paiement/succes" element={<PaiementSucces />} />
           <Route path="/offline" element={<Offline />} />
         </Routes>
       </main>

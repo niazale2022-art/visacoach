@@ -454,7 +454,7 @@ def get_coherence(dossier_id: str) -> dict:
 # ---------------------------------------------------------------------------
 # Paiement par dossier (CinetPay) — chaque dossier se paie séparément
 # ---------------------------------------------------------------------------
-PLAN_PRIX_FCFA = {"diagnostic": 0, "rapport": 15000, "complet": 45000, "vip": 99000}
+PLAN_PRIX_FCFA = {"diagnostic": 0, "rapport": 65000, "dossier": 130000, "vip": 500000}
 
 
 class CheckoutRequest(BaseModel):

@@ -59,10 +59,11 @@ class Settings(BaseSettings):
     RESEND_FROM_EMAIL: str = "VisaCoach <contact@visacoach.app>"
 
     # --- Tarifs (en centimes pour Stripe, en FCFA pour CinetPay) --------
-    PRICE_RAPPORT_FCFA: int = 6500
-    PRICE_RAPPORT_EUR_CENTS: int = 990  # 9,90 €
-    PRICE_SUIVI_FCFA: int = 19600
-    PRICE_SUIVI_EUR_CENTS: int = 2990  # 29,90 €
+    # rapport = Rapport Martin ; suivi = Pack Dossier
+    PRICE_RAPPORT_FCFA: int = 65000
+    PRICE_RAPPORT_EUR_CENTS: int = 9900  # 99 €
+    PRICE_SUIVI_FCFA: int = 130000
+    PRICE_SUIVI_EUR_CENTS: int = 19900  # 199 €
 
     @property
     def origins(self) -> list[str]:

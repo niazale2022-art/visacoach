@@ -263,9 +263,9 @@ export default function Home() {
 
               <div className="mt-5 flex items-baseline gap-2">
                 <span className="text-xl font-extrabold" style={{ color: C.ink }}>
-                  6 500 FCFA
+                  65 000 FCFA
                 </span>
-                <span className="text-sm text-slate-400">≈ 9,90 €</span>
+                <span className="text-sm text-slate-400">≈ 99 €</span>
               </div>
 
               <button
@@ -449,7 +449,7 @@ export default function Home() {
             Voici ce que contient votre rapport
           </h2>
           <p className="mt-2 text-center" style={{ color: C.slate }}>
-            Débloquez l'analyse complète pour 6 500 FCFA
+            Débloquez l'analyse complète pour 65 000 FCFA
           </p>
 
           <div style={{ position: "relative", maxWidth: "700px", margin: "32px auto 0" }}>
@@ -533,7 +533,7 @@ export default function Home() {
                     fontSize: "0.9rem",
                   }}
                 >
-                  Voir mon rapport — 6 500 FCFA →
+                  Voir mon rapport — 65 000 FCFA →
                 </button>
               </div>
             </div>
@@ -551,7 +551,7 @@ export default function Home() {
             Payez en FCFA (mobile money) ou en euros (carte).
           </p>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
+          <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {/* Gratuit */}
             <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10">
               <h3 className="text-lg font-bold text-white">Diagnostic</h3>
@@ -570,7 +570,7 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Rapport (featured) */}
+            {/* Rapport Martin (featured) */}
             <div
               className="relative rounded-2xl bg-white p-6 shadow-2xl"
               style={{ border: `2px solid ${C.gold}` }}
@@ -582,16 +582,16 @@ export default function Home() {
                 Le plus choisi
               </span>
               <h3 className="text-lg font-bold" style={{ color: C.ink }}>
-                Rapport complet
+                Rapport Martin
               </h3>
               <p className="mt-2 text-3xl font-extrabold" style={{ color: C.blue }}>
-                6 500 FCFA
+                65 000 FCFA
               </p>
-              <p className="text-sm text-slate-400">≈ 9,90 €</p>
+              <p className="text-sm text-slate-400">≈ 99 €</p>
               <ul className="mt-4 space-y-2 text-sm" style={{ color: C.slate }}>
                 <li>✓ Analyse détaillée du profil</li>
                 <li>✓ Plan d'action priorisé</li>
-                <li>✓ Rapport reçu par email</li>
+                <li>✓ Rapport rédigé par Martin</li>
               </ul>
               <button
                 type="button"
@@ -614,15 +614,16 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Suivi Expert */}
+            {/* Pack Dossier */}
             <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10">
-              <h3 className="text-lg font-bold text-white">Suivi Expert</h3>
-              <p className="mt-2 text-3xl font-extrabold text-white">19 600 FCFA</p>
-              <p className="text-sm text-white/50">≈ 29,90 €</p>
+              <h3 className="text-lg font-bold text-white">Pack Dossier</h3>
+              <p className="mt-2 text-3xl font-extrabold text-white">130 000 FCFA</p>
+              <p className="text-sm text-white/50">≈ 199 €</p>
               <ul className="mt-4 space-y-2 text-sm text-white/75">
-                <li>✓ Tout le Rapport complet</li>
-                <li>✓ Calendrier semaine par semaine</li>
-                <li>✓ Accompagnement personnalisé</li>
+                <li>✓ Tout le Rapport Martin</li>
+                <li>✓ Vérification de chaque document</li>
+                <li>✓ Analyse de cohérence consulaire</li>
+                <li>✓ Lettres générées + calendrier</li>
               </ul>
               <button
                 type="button"
@@ -632,17 +633,26 @@ export default function Home() {
               >
                 Choisir ce plan
               </button>
-              <div className="mt-3 flex flex-wrap justify-center gap-1">
-                {PAY_BADGES.map((b) => (
-                  <span
-                    key={b}
-                    className="rounded px-2 py-0.5 text-[10px] font-semibold text-white"
-                    style={{ backgroundColor: "rgba(255,255,255,0.12)" }}
-                  >
-                    {b}
-                  </span>
-                ))}
-              </div>
+            </div>
+
+            {/* VIP + Humain */}
+            <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10">
+              <h3 className="text-lg font-bold text-white">VIP + Humain</h3>
+              <p className="mt-2 text-3xl font-extrabold text-white">500 000 FCFA</p>
+              <p className="text-sm text-white/50">≈ 799 €</p>
+              <ul className="mt-4 space-y-2 text-sm text-white/75">
+                <li>✓ Tout le Pack Dossier</li>
+                <li>✓ Accompagnement humain dédié</li>
+                <li>✓ Préparation à l'entretien consulaire</li>
+                <li>✓ Suivi jusqu'au dépôt</li>
+              </ul>
+              <button
+                type="button"
+                onClick={goDiagnostic}
+                className="mt-6 w-full rounded-xl border border-white/30 py-3 font-semibold text-white transition hover:bg-white/10"
+              >
+                Choisir ce plan
+              </button>
             </div>
           </div>
         </div>

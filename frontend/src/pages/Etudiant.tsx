@@ -22,9 +22,9 @@ const MODULES = [
 
 const PLANS = [
   { name: "Diagnostic", price: "Gratuit", items: ["Score 0-100", "Plan personnalisé"], featured: false },
-  { name: "Pack Candidature", price: "19 500 FCFA", items: ["Lettres IA", "Guide Campus France"], featured: true },
-  { name: "Pack Complet", price: "45 000 FCFA", items: ["Tout le Pack Candidature", "Simulation entretien", "Checklist visa"], featured: false },
-  { name: "VIP", price: "99 000 FCFA", items: ["Tout le Pack Complet", "Accompagnement humain", "Suivi 3 mois"], featured: false },
+  { name: "Rapport Martin", price: "65 000 FCFA", items: ["Lettres IA", "Guide Campus France", "≈ 99 €"], featured: true },
+  { name: "Pack Dossier", price: "130 000 FCFA", items: ["Tout le Rapport Martin", "Simulation entretien", "Checklist visa", "≈ 199 €"], featured: false },
+  { name: "VIP + Humain", price: "500 000 FCFA", items: ["Tout le Pack Dossier", "Accompagnement humain", "Suivi 3 mois", "≈ 799 €"], featured: false },
 ];
 
 const TESTIMONIALS = [

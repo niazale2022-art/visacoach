@@ -17,26 +17,26 @@ const PLANS: {
 }[] = [
   {
     id: "rapport",
-    title: "Rapport complet",
-    fcfa: "6 500 FCFA",
-    eur: "9,90 €",
+    title: "Rapport Martin",
+    fcfa: "65 000 FCFA",
+    eur: "99 €",
     features: [
       "Analyse détaillée de votre profil",
       "Points forts et points de vigilance",
       "Plan d'action priorisé",
-      "Rapport reçu par email",
+      "Rapport rédigé par Martin, reçu par email",
     ],
   },
   {
     id: "suivi",
-    title: "Suivi Expert",
-    fcfa: "19 600 FCFA",
-    eur: "29,90 €",
+    title: "Pack Dossier",
+    fcfa: "130 000 FCFA",
+    eur: "199 €",
     features: [
-      "Tout le Rapport complet",
-      "Calendrier semaine par semaine",
-      "Checklist exhaustive des pièces",
-      "Accompagnement personnalisé",
+      "Tout le Rapport Martin",
+      "Vérification de chaque document",
+      "Analyse de cohérence consulaire",
+      "Lettres générées + calendrier de dépôt",
     ],
   },
 ];

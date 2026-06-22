@@ -105,6 +105,33 @@ export default function DossierUniversel() {
     }
   }
 
+  // Paiement par carte bancaire (Stripe, en euros) — diaspora.
+  async function handleStripePayment(plan: string) {
+    if (!id) return;
+    setPaying(true);
+    setError(null);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+      const res = await fetch(`${apiUrl}/api/stripe/checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plan,
+          dossier_id: id,
+          user_email: user?.email ?? "",
+          user_id: user?.id ?? "",
+        }),
+      });
+      if (!res.ok) throw new Error("Paiement par carte indisponible.");
+      const data = await res.json();
+      if (!data.checkout_url) throw new Error("Lien de paiement manquant.");
+      window.location.href = data.checkout_url;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Paiement indisponible.");
+      setPaying(false);
+    }
+  }
+
   if (loading) return <p className="py-20 text-center text-slate-500">Chargement…</p>;
   if (error && !dossier) return <p className="py-20 text-center text-red-600">{error}</p>;
   if (!dossier || !id) return null;
@@ -170,28 +197,48 @@ export default function DossierUniversel() {
           <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
             <div>
               <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "#F7B731" }}>
-                15 000 FCFA
+                65 000 FCFA
               </div>
-              <div style={{ fontSize: "0.72rem", opacity: 0.6 }}>≈ 22,90 €</div>
+              <div style={{ fontSize: "0.72rem", opacity: 0.6 }}>≈ 99 €</div>
             </div>
-            <button
-              type="button"
-              onClick={() => handlePaiement("rapport")}
-              disabled={paying}
-              style={{
-                background: "#F7B731",
-                color: "#0A0F2C",
-                border: "none",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                fontWeight: 800,
-                cursor: paying ? "not-allowed" : "pointer",
-                fontSize: "0.9rem",
-                opacity: paying ? 0.7 : 1,
-              }}
-            >
-              {paying ? "Redirection…" : "Payer maintenant →"}
-            </button>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <button
+                type="button"
+                onClick={() => handleStripePayment("rapport")}
+                disabled={paying}
+                style={{
+                  background: "#F7B731",
+                  color: "#0A0F2C",
+                  border: "none",
+                  padding: "12px 24px",
+                  borderRadius: "8px",
+                  fontWeight: 800,
+                  cursor: paying ? "not-allowed" : "pointer",
+                  fontSize: "0.9rem",
+                  opacity: paying ? 0.7 : 1,
+                }}
+              >
+                {paying ? "Redirection…" : "💳 Payer par carte (99 €)"}
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePaiement("rapport")}
+                disabled={paying}
+                style={{
+                  background: "transparent",
+                  color: "white",
+                  border: "1px solid rgba(255,255,255,0.45)",
+                  padding: "10px 24px",
+                  borderRadius: "8px",
+                  fontWeight: 700,
+                  cursor: paying ? "not-allowed" : "pointer",
+                  fontSize: "0.85rem",
+                  opacity: paying ? 0.7 : 1,
+                }}
+              >
+                📱 Mobile Money (65 000 FCFA)
+              </button>
+            </div>
           </div>
         </div>
       )}
